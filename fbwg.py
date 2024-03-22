@@ -20,7 +20,7 @@ def bg_music():
         # Load audio file
         mixer.music.load("arcade_music.mp3")
         #play the music
-        mixer.music.play()
+        mixer.music.play(-1)
         #set bg_music volume
         pygame.mixer.music.set_volume(0.3)
 
