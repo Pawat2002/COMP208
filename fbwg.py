@@ -1,53 +1,131 @@
 import pygame
-from pygame import mixer
+from pygame.locals import *
 
-# Initialize pygame
 pygame.init()
 
-# set game window
+clock = pygame.time.Clock()
+fps = 60
+
 screen_width = 1000
 screen_height = 1000
+
 screen = pygame.display.set_mode((screen_width, screen_height))
-
-# set game title name and fonts
 pygame.display.set_caption("Fire boy and Water girl")
-tile_size = 100
 
+# define game var
+tile_size = 50
+
+# load imgs
 sky_img = pygame.image.load('sky.jpg')
-
-def bg_music():
-    if not pygame.mixer.music.get_busy():
-        # Load audio file
-        mixer.music.load("arcade_music.mp3")
-        #play the music
-        mixer.music.play(-1)
-        #set bg_music volume
-        pygame.mixer.music.set_volume(0.3)
 
 
 def draw_grid():
-    for line in range(0, 12):
+    for line in range(0, 20):
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+
+class Player():
+    def __init__(self, x, y):
+        img = pygame.image.load('people.jpg')
+        self.image = pygame.transform.scale(img, (40, 80))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.vel_y = 0
+        self.jumped = False
+
+    def update(self):
+        dx = 0
+        dy = 0
+
+        # get keypresses
+        key = pygame.key.get_pressed()
+        if key[pygame.K_SPACE] and self.jumped == False:
+            self.vel_y = -15
+            self.jumped = True
+        if key[pygame.K_SPACE] == False:
+            self.jumped = False
+        if key[pygame.K_LEFT]:
+            dx -= 5
+        if key[pygame.K_RIGHT]:
+            dx += 5
+
+        # add gravity
+        self.vel_y += 1
+        if self.vel_y > 3:
+            self.vel_y = 3
+
+        dy += self.vel_y
+
+        # check collision
+        for tile in world.tile_list:
+            # x direction
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                # check if below the ground eg jumping
+                dx = 0
+
+            # y direction
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                # check if below the ground eg jumping
+                if self.vel_y < 0:
+                    dy = tile[1].bottom - self.rect.top
+                    self.vel_y = 0
+
+                # falling
+                elif self.vel_y >= 0:
+                    dy = tile[1].top - self.rect.bottom
+                    self.vel_y = 0
+
+        # update player coordinates
+        self.rect.x += dx
+        self.rect.y += dy
+
+        if self.rect.bottom > screen_height - 50:
+            self.rect.bottom = screen_height - 50
+            dy = 0
+
+        # draw player onto screen
+        screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+
+
 class World():
-    def __init__(self,data):
+    def __init__(self, data):
         self.tile_list = []
         dirt_img = pygame.image.load('brick.png')
         grass_img = pygame.image.load('grass.webp')
+        block_img = pygame.image.load('block.png')
+        door_img = pygame.image.load('door.png')
         row_count = 0
         for row in data:
             col_count = 0
             for tile in row:
-                if tile == 1:
+                if tile == 1:  # tile[0]
                     img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 2:
+                if tile == 2:  # tile[1]
                     img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+                    img_rect = img.get_rect()
+                    img_rect.x = tile_size * col_count
+                    img_rect.y = tile_size * row_count
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 3:  # tile[2]
+                    img = pygame.transform.scale(block_img, (tile_size, tile_size))
+                    img_rect = img.get_rect()
+                    img_rect.x = tile_size * col_count
+                    img_rect.y = tile_size * row_count
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 5:  # tile[3]
+                    img = pygame.transform.scale(door_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
@@ -58,35 +136,46 @@ class World():
 
     def draw(self):
         for tile in self.tile_list:
-            screen.blit(tile[0],tile[1])
+            screen.blit(tile[0], tile[1])
+            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+
 
 world_data = [
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1],
 ]
 
+player = Player(100, screen_height - 130)
 world = World(world_data)
 # if save_button.draw():
-     #pickle_out(world_data,pickle_out)
+# pickle_out(world_data,pickle_out)
 
 run = True
 while run:
-    bg_music()
+
+    clock.tick(fps)
     screen.blit(sky_img, (0, 0))
     world.draw()
     draw_grid()
-
-
-
-
+    player.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
