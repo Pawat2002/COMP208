@@ -1,17 +1,29 @@
 import pygame
-from pygame.locals import *
+from pygame import mixer
 
+# Initialize pygame
 pygame.init()
 
+# set game window
 screen_width = 1000
 screen_height = 1000
-
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Fire boy and Water girl")
 
+# set game title name and fonts
+pygame.display.set_caption("Fire boy and Water girl")
 tile_size = 100
 
 sky_img = pygame.image.load('sky.jpg')
+
+def bg_music():
+    if not pygame.mixer.music.get_busy():
+        # Load audio file
+        mixer.music.load("arcade_music.mp3")
+        #play the music
+        mixer.music.play()
+        #set bg_music volume
+        pygame.mixer.music.set_volume(0.3)
+
 
 def draw_grid():
     for line in range(0, 12):
@@ -49,16 +61,16 @@ class World():
             screen.blit(tile[0],tile[1])
 
 world_data = [
-[1,1,1,1,1,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,1],
-[1,2,2,2,2,2,2,2,2,1],
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
 ]
 
 world = World(world_data)
@@ -67,9 +79,13 @@ world = World(world_data)
 
 run = True
 while run:
+    bg_music()
     screen.blit(sky_img, (0, 0))
     world.draw()
     draw_grid()
+
+
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
