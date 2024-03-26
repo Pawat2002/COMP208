@@ -18,6 +18,18 @@ tile_size = 50
 # load imgs
 sky_img = pygame.image.load('sky.jpg')
 
+# sound effects
+jumpSound = pygame.mixer.Sound("jump.wav")
+
+def bg_music():
+    if not pygame.mixer.music.get_busy():
+        # Load audio file
+        mixer.music.load("arcade_music.mp3")
+        #play the music
+        mixer.music.play(-1)
+        #set bg_music volume
+        pygame.mixer.music.set_volume(0.3)
+
 
 def draw_grid():
     for line in range(0, 20):
@@ -47,6 +59,7 @@ class Player():
         # get keypresses
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE] and self.jumped == False:
+            jumpSound.play()
             self.vel_y = -15
             self.jumped = True
         if key[pygame.K_SPACE] == False:
@@ -202,6 +215,8 @@ world = World(world_data)
 run = True
 while run:
 
+    bg_music()
+    
     clock.tick(fps)
     screen.blit(sky_img, (0, 0))
     world.draw()
