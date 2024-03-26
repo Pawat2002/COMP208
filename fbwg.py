@@ -12,7 +12,7 @@ screen_height = 1000
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Fire boy and Water girl")
 
-# define game var
+# define game tile size
 tile_size = 50
 
 # load imgs
@@ -25,10 +25,12 @@ def draw_grid():
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
 
+# create player
 class Player():
     def __init__(self, x, y):
         img = pygame.image.load('people.jpg')
         self.image = pygame.transform.scale(img, (40, 80))
+        # obtain position of people
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -37,6 +39,7 @@ class Player():
         self.vel_y = 0
         self.jumped = False
 
+    # movement of people
     def update(self):
         dx = 0
         dy = 0
@@ -103,49 +106,72 @@ class World():
         for row in data:
             col_count = 0
             for tile in row:
-                if tile == 1:  # tile[0]
+                if tile == 1:  # tile_list[0] dirt
                     img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 2:  # tile[1]
+                if tile == 2:  # tile_list[1] grass
                     img = pygame.transform.scale(grass_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 3:  # tile[2]
+                if tile == 3:  # tile_list[2] block
                     img = pygame.transform.scale(block_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 5:  # tile[3]
-                    img = pygame.transform.scale(door_img, (tile_size, tile_size))
-                    img_rect = img.get_rect()
-                    img_rect.x = tile_size * col_count
-                    img_rect.y = tile_size * row_count
-                    tile = (img, img_rect)
-                    self.tile_list.append(tile)
+                if tile == 4:  # tile_list[3] enemy
+                    enemy = Enemy(col_count * tile_size, row_count * tile_size)
+                    enemy_group.add(enemy)
+
+                if tile == 5:  # tile_list[4] door
+                    door = Door(col_count * tile_size, row_count * tile_size)
+                    door_group.add(door)
                 col_count += 1
             row_count += 1
 
+    # draw world to screen
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
             pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 
+# create enemy
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("enemy.jpg")
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
+class Door(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("door.png")
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
+# select positions for world
 world_data = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -154,16 +180,21 @@ world_data = [
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1],
 ]
 
 player = Player(100, screen_height - 130)
+
+enemy_group = pygame.sprite.Group()
+
+door_group = pygame.sprite.Group()
+
 world = World(world_data)
 # if save_button.draw():
 # pickle_out(world_data,pickle_out)
@@ -174,7 +205,13 @@ while run:
     clock.tick(fps)
     screen.blit(sky_img, (0, 0))
     world.draw()
+
     draw_grid()
+
+    enemy_group.draw(screen)
+
+    door_group.draw(screen)
+
     player.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
