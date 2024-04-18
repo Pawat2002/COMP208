@@ -56,19 +56,16 @@ class Button():
             self.clicked = False
         return action
 
+
 restart_img = pygame.image.load("restart.png")
 restart_button = Button(screen_width // 2 - 225, screen_height // 2, restart_img)
-
-# Inside the game loop
-if game_over == -1:
-    screen.blit(reset, (screen_width // 2 - 150, screen_height // 2 - 75))
-    restart_button.draw()
 
 
 def draw_grid():
     for line in range(0, 20):
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
+
 
 # sound effects
 jumpSound = pygame.mixer.Sound("jump.wav")
@@ -82,6 +79,7 @@ def bg_music():
         pygame.mixer.music.play(-1)
         # set bg_music volume
         pygame.mixer.music.set_volume(0.3)
+
 
 # create player
 class Player():
@@ -174,6 +172,10 @@ class Player():
                     self.initial_time = pygame.time.get_ticks()  # Reset initial time
                     self.rect.x = 100  # Reset player's position
                     self.rect.y = screen_height - 130
+                    if self.lives == 0:  # No more lives left
+                        game_over = -1  # Set game_over to indicate game over
+                        self.rect.x = 100  # Reset player's position
+                        self.rect.y = screen_height - 130
 
                 # update player coordinates
                 self.rect.x += dx
