@@ -28,7 +28,8 @@ main_menu = True
 bg = pygame.image.load('bg.png')
 reset = pygame.image.load('gameover.png')
 start = pygame.image.load('start.png')
-quit = pygame.image.load("quit.png")
+quit_img = pygame.image.load("quit.png")
+restart_img = pygame.image.load("restart.png")
 
 
 class Button():
@@ -54,6 +55,14 @@ class Button():
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
         return action
+
+restart_img = pygame.image.load("restart.png")
+restart_button = Button(screen_width // 2 - 225, screen_height // 2, restart_img)
+
+# Inside the game loop
+if game_over == -1:
+    screen.blit(reset, (screen_width // 2 - 150, screen_height // 2 - 75))
+    restart_button.draw()
 
 
 def draw_grid():
@@ -313,7 +322,8 @@ world = World(world_data)
 
 reset_button = Button(screen_width // 2 - 75, screen_height // 2, reset)
 start_button = Button(screen_width // 2 - 150, screen_height // 2 - 40, start)
-quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit)
+quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit_img)
+restart_button = Button(screen_width // 2 - 75, screen_height // 2 + 100, restart_img)
 
 coins_collected = 0
 coins_font = pygame.font.Font(None, 36)
@@ -348,8 +358,7 @@ while run:
         if reset_button.draw():
             game_over = 0
             coins_collected = 0
-            world = World(world_data)
-            player = Player(100, screen_height - 130)
+            player.lives = 3
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
