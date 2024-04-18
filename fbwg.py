@@ -1,5 +1,11 @@
 import pygame
 from pygame.locals import *
+import pygame.mixer
+
+pygame.mixer.init()
+
+pygame.mixer.music.load("arcade_music.mp3")
+pygame.mixer.music.play(-1)
 
 pygame.init()
 
@@ -10,7 +16,7 @@ screen_width = 800
 screen_height = 800
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Treasure Trove : The Coin Conquest")
+pygame.display.set_caption("Fire boy and Water girl")
 
 # define game tile size
 tile_size = 40
@@ -25,9 +31,8 @@ start = pygame.image.load('start.png')
 quit = pygame.image.load("quit.png")
 
 
-
 class Button():
-    def __init__(self,x,y,image):
+    def __init__(self, x, y, image):
         self.image = image
         self.image = pygame.transform.scale(self.image, (120, 80))
         self.rect = self.image.get_rect()
@@ -38,7 +43,7 @@ class Button():
     def draw(self):
         action = False
 
-        screen.blit(self.image,self.rect)
+        screen.blit(self.image, self.rect)
         # mouse position
         pos = pygame.mouse.get_pos()
 
@@ -56,17 +61,18 @@ def draw_grid():
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+# sound effects
+jumpSound = pygame.mixer.Sound("jump.wav")
 
-# function for background music
+
 def bg_music():
     if not pygame.mixer.music.get_busy():
         # Load audio file
         pygame.mixer.music.load("arcade_music.mp3")
-        # Play the music
+        # play the music
         pygame.mixer.music.play(-1)
-        # Set background music volume
+        # set bg_music volume
         pygame.mixer.music.set_volume(0.3)
-
 
 # create player
 class Player():
@@ -81,6 +87,7 @@ class Player():
         self.height = self.image.get_height()
         self.vel_y = 0
         self.jumped = False
+        self.on_ground = True  # Track if player is on the ground
         self.lives = 3
         self.started_moving = False  # Track if the player has started moving
 
@@ -91,16 +98,17 @@ class Player():
         self.lives_font = pygame.font.Font(None, 36)  # Font for lives display
 
     # movement of people
-    def update(self,game_over):
+    def update(self, game_over):
         dx = 0
         dy = 0
 
         if game_over == 0:
             # get keypresses
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False:
+            if key[pygame.K_SPACE] and self.jumped == False and self.on_ground:
                 self.vel_y = -15
                 self.jumped = True
+                self.on_ground = False  # Update on_ground status
                 self.started_moving = True  # Player has started moving
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
@@ -133,14 +141,16 @@ class Player():
                         if self.vel_y < 0:
                             dy = tile[1].bottom - self.rect.top
                             self.vel_y = 0
+                            self.on_ground = False  # Update on_ground status
 
                         # falling
                         elif self.vel_y >= 0:
                             dy = tile[1].top - self.rect.bottom
                             self.vel_y = 0
+                            self.on_ground = True  # Update on_ground status
 
                 # check collision with enemies
-                if pygame.sprite.spritecollide(self,enemy_group , False):
+                if pygame.sprite.spritecollide(self, enemy_group, False):
                     game_over = -1
                     self.lives -= 1  # Decrease lives when colliding with enemies
                     self.initial_time = pygame.time.get_ticks()  # Reset the timer
@@ -159,6 +169,10 @@ class Player():
                 # update player coordinates
                 self.rect.x += dx
                 self.rect.y += dy
+
+                # Check if player reaches the door
+                if pygame.sprite.spritecollide(self, door_group, False):
+                    game_over = 1
 
             # Draw player onto screen
             screen.blit(self.image, self.rect)
@@ -179,6 +193,11 @@ class Player():
             if self.lives == 0:
                 game_over = -1
                 reset_button.draw()
+
+        elif game_over == 1:
+            game_over = 2
+            self.rect.x = 100
+            self.rect.y = screen_height - 130
 
         return game_over
 
@@ -292,13 +311,15 @@ coin_group = pygame.sprite.Group()
 
 world = World(world_data)
 
-reset_button = Button(screen_width//2 - 75, screen_height//2,reset)
-start_button = Button(screen_width//2-150, screen_height//2-40,start)
-quit_button = Button(screen_width//2+75, screen_height//2-40,quit)
+reset_button = Button(screen_width // 2 - 75, screen_height // 2, reset)
+start_button = Button(screen_width // 2 - 150, screen_height // 2 - 40, start)
+quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit)
+
+coins_collected = 0
+coins_font = pygame.font.Font(None, 36)
 
 run = True
 while run:
-    bg_music()
     clock.tick(fps)
     screen.blit(bg, (0, 0))
     if main_menu == True:
@@ -312,6 +333,23 @@ while run:
         door_group.draw(screen)
         coin_group.draw(screen)
         game_over = player.update(game_over)
+
+        # Update coins collected and render on screen
+        for coin in coin_group:
+            if player.rect.colliderect(coin.rect):
+                coin_group.remove(coin)
+                coins_collected += 1
+
+        coins_text = coins_font.render("Coins: " + str(coins_collected), True, (255, 255, 255))
+        screen.blit(coins_text, (30, 30))
+
+    if game_over == 2:
+        screen.blit(reset, (screen_width // 2 - 150, screen_height // 2 - 75))
+        if reset_button.draw():
+            game_over = 0
+            coins_collected = 0
+            world = World(world_data)
+            player = Player(100, screen_height - 130)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
