@@ -86,6 +86,7 @@ class Player():
     def __init__(self, x, y):
         img = pygame.image.load('people.png')
         self.image = pygame.transform.scale(img, (40, 80))
+        self.original_image = self.image  # Store original image for flipping
         # obtain position of people
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -121,9 +122,11 @@ class Player():
                 self.jumped = False
             if key[pygame.K_LEFT]:
                 dx -= 5
+                self.image = pygame.transform.flip(self.original_image, True, False)  # Flip the image horizontally
                 self.started_moving = True  # Player has started moving
             if key[pygame.K_RIGHT]:
                 dx += 5
+                self.image = self.original_image  # Reset the image to its original state
                 self.started_moving = True  # Player has started moving
 
             # Timer starts when the player starts moving
