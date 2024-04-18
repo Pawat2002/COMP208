@@ -23,7 +23,16 @@ bg = pygame.image.load('bg.png')
 reset = pygame.image.load('gameover.png')
 start = pygame.image.load('start.png')
 quit = pygame.image.load("quit.png")
+jumpSound = pygame.mixer.Sound("jump.wav")
 
+def bg_music():
+    if not pygame.mixer.music.get_busy():
+        # Load audio file
+        mixer.music.load("arcade_music.mp3")
+        #play the music
+        mixer.music.play(-1)
+        #set bg_music volume
+        pygame.mixer.music.set_volume(0.3)
 
 
 class Button():
@@ -82,6 +91,7 @@ class Player():
             # get keypresses
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE] and self.jumped == False:
+                jumpSound.play()
                 self.vel_y = -15
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
@@ -265,7 +275,7 @@ quit_button = Button(screen_width//2+75, screen_height//2-40,quit)
 
 run = True
 while run:
-
+    bg_music()
     clock.tick(fps)
     screen.blit(bg, (0, 0))
     if main_menu == True:
