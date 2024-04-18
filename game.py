@@ -1,5 +1,12 @@
 import pygame
 from pygame.locals import *
+import pygame.mixer
+
+pygame.mixer.init()
+
+pygame.mixer.music.load("arcade_music.mp3")
+pygame.mixer.music.play(-1)
+
 
 pygame.init()
 
@@ -55,6 +62,18 @@ def draw_grid():
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+# sound effects
+jumpSound = pygame.mixer.Sound("jump.wav")
+
+
+def bg_music():
+    if not pygame.mixer.music.get_busy():
+        # Load audio file
+        pygame.mixer.music.load("arcade_music.mp3")
+        # play the music
+        pygame.mixer.music.play(-1)
+        # set bg_music volume
+        pygame.mixer.music.set_volume(0.3)
 
 # create player
 class Player():
