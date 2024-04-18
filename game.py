@@ -7,7 +7,7 @@ screen_width = 1000
 screen_height = 1000
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Fire boy and Water girl")
+pygame.display.set_caption("Treasure Trove : The Coin Conquest")
 
 tile_size = 100
 
