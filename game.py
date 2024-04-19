@@ -7,7 +7,6 @@ pygame.mixer.init()
 pygame.mixer.music.load("arcade_music.mp3")
 pygame.mixer.music.play(-1)
 
-
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -29,7 +28,8 @@ main_menu = True
 bg = pygame.image.load('bg.png')
 reset = pygame.image.load('gameover.png')
 start = pygame.image.load('start.png')
-quit = pygame.image.load("quit.png")
+quit_img = pygame.image.load("quit.png")
+restart_img = pygame.image.load("restart.png")
 
 
 class Button():
@@ -57,10 +57,15 @@ class Button():
         return action
 
 
+restart_img = pygame.image.load("restart.png")
+restart_button = Button(screen_width // 2 - 225, screen_height // 2, restart_img)
+
+
 def draw_grid():
     for line in range(0, 20):
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
+
 
 # sound effects
 jumpSound = pygame.mixer.Sound("jump.wav")
@@ -75,11 +80,13 @@ def bg_music():
         # set bg_music volume
         pygame.mixer.music.set_volume(0.3)
 
+
 # create player
 class Player():
     def __init__(self, x, y):
         img = pygame.image.load('people.png')
         self.image = pygame.transform.scale(img, (40, 80))
+        self.original_image = self.image  # Store original image for flipping
         # obtain position of people
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -115,9 +122,11 @@ class Player():
                 self.jumped = False
             if key[pygame.K_LEFT]:
                 dx -= 5
+                self.image = pygame.transform.flip(self.original_image, True, False)  # Flip the image horizontally
                 self.started_moving = True  # Player has started moving
             if key[pygame.K_RIGHT]:
                 dx += 5
+                self.image = self.original_image  # Reset the image to its original state
                 self.started_moving = True  # Player has started moving
 
             # Timer starts when the player starts moving
@@ -166,6 +175,10 @@ class Player():
                     self.initial_time = pygame.time.get_ticks()  # Reset initial time
                     self.rect.x = 100  # Reset player's position
                     self.rect.y = screen_height - 130
+                    if self.lives == 0:  # No more lives left
+                        game_over = -1  # Set game_over to indicate game over
+                        self.rect.x = 100  # Reset player's position
+                        self.rect.y = screen_height - 130
 
                 # update player coordinates
                 self.rect.x += dx
@@ -314,7 +327,8 @@ world = World(world_data)
 
 reset_button = Button(screen_width // 2 - 75, screen_height // 2, reset)
 start_button = Button(screen_width // 2 - 150, screen_height // 2 - 40, start)
-quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit)
+quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit_img)
+restart_button = Button(screen_width // 2 - 75, screen_height // 2 + 100, restart_img)
 
 coins_collected = 0
 coins_font = pygame.font.Font(None, 36)
@@ -349,8 +363,7 @@ while run:
         if reset_button.draw():
             game_over = 0
             coins_collected = 0
-            world = World(world_data)
-            player = Player(100, screen_height - 130)
+            player.lives = 3
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
