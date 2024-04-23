@@ -29,7 +29,7 @@ bg = pygame.image.load('bg.png')
 reset = pygame.image.load('gameover.png')
 start = pygame.image.load('start.png')
 quit_img = pygame.image.load("quit.png")
-restart_img = pygame.image.load("restart.png")
+restart_img = pygame.image.load("reset.png")
 
 
 class Button():
@@ -57,7 +57,7 @@ class Button():
         return action
 
 
-restart_img = pygame.image.load("restart.png")
+restart_img = pygame.image.load("reset.png")
 restart_button = Button(screen_width // 2 - 225, screen_height // 2, restart_img)
 
 

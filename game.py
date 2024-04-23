@@ -23,13 +23,11 @@ tile_size = 40
 game_over = 0
 main_menu = True
 
-
 # load imgs
 bg = pygame.image.load('bg.png')
-reset = pygame.image.load('gameover.png')
+gameover_img = pygame.image.load('gameover.png')
 start = pygame.image.load('start.png')
 quit_img = pygame.image.load("quit.png")
-restart_img = pygame.image.load("restart.png")
 
 
 class Button():
@@ -57,18 +55,10 @@ class Button():
         return action
 
 
-restart_img = pygame.image.load("restart.png")
-restart_button = Button(screen_width // 2 - 225, screen_height // 2, restart_img)
-
-
-def draw_grid():
-    for line in range(0, 20):
-        pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
-        pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
-
-
 # sound effects
 jumpSound = pygame.mixer.Sound("jump.wav")
+coinSound = pygame.mixer.Sound("coinSound.mp3")
+gameoverSound = pygame.mixer.Sound("gameoverSound.mp3")
 
 
 def bg_music():
@@ -78,7 +68,7 @@ def bg_music():
         # play the music
         pygame.mixer.music.play(-1)
         # set bg_music volume
-        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.set_volume(0.2)
 
 
 # create player
@@ -98,10 +88,12 @@ class Player():
         self.on_ground = True  # Track if player is on the ground
         self.lives = 3
         self.started_moving = False  # Track if the player has started moving
+        self.jumpSound = pygame.mixer.Sound("jump.wav")
+        self.gameoverSound = pygame.mixer.Sound("gameoverSound.mp3")
 
         # Timer
         self.initial_time = pygame.time.get_ticks()  # Initial time in milliseconds
-        self.timer = 100  # Initial time in seconds
+        self.timer = 30  # Initial time in seconds
         self.timer_font = pygame.font.Font(None, 36)  # Font for timer display
         self.lives_font = pygame.font.Font(None, 36)  # Font for lives display
 
@@ -118,6 +110,7 @@ class Player():
                 self.jumped = True
                 self.on_ground = False  # Update on_ground status
                 self.started_moving = True  # Player has started moving
+                self.jumpSound.play()
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
             if key[pygame.K_LEFT]:
@@ -168,7 +161,7 @@ class Player():
                 # Timer update
                 current_time = pygame.time.get_ticks()  # Current time in milliseconds
                 elapsed_seconds = (current_time - self.initial_time) // 1000  # Elapsed time in seconds
-                self.timer = max(0, 100 - elapsed_seconds)  # Calculate remaining time
+                self.timer = max(0, 30 - elapsed_seconds)  # Calculate remaining time
 
                 if self.timer == 0:  # Timer has run out
                     self.lives -= 1  # Decrease lives by 1
@@ -190,7 +183,7 @@ class Player():
 
             # Draw player onto screen
             screen.blit(self.image, self.rect)
-            pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+            #pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
             # Draw timer
             timer_text = self.timer_font.render("Time: " + str(self.timer), True, (255, 255, 255))
@@ -206,7 +199,8 @@ class Player():
             game_over = 0
             if self.lives == 0:
                 game_over = -1
-                reset_button.draw()
+                gameover_button.draw()
+                self.gameoverSound.play()
 
         elif game_over == 1:
             game_over = 2
@@ -219,37 +213,35 @@ class Player():
 class World():
     def __init__(self, data):
         self.tile_list = []
-        dirt_img = pygame.image.load('brick.png')
-        coin_img = pygame.image.load('coin.png')
+        brick_img = pygame.image.load('brick.png')
         block_img = pygame.image.load('block.png')
-        door_img = pygame.image.load('door.png')
         row_count = 0
         for row in data:
             col_count = 0
             for tile in row:
-                if tile == 1:  # tile_list[0] dirt
-                    img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
+                if tile == 1: 
+                    img = pygame.transform.scale(brick_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 2:  # tile_list[0] dirt
+                if tile == 2:  
                     coin = Coin(col_count * tile_size, row_count * tile_size)
                     coin_group.add(coin)
 
-                if tile == 3:  # tile_list[2] block
+                if tile == 3: 
                     img = pygame.transform.scale(block_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
                     img_rect.x = tile_size * col_count
                     img_rect.y = tile_size * row_count
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 4:  # tile_list[3] enemy
+                if tile == 4:
                     enemy = Enemy(col_count * tile_size, row_count * tile_size)
                     enemy_group.add(enemy)
 
-                if tile == 5:  # tile_list[4] door
+                if tile == 5:
                     door = Door(col_count * tile_size, row_count * tile_size)
                     door_group.add(door)
                 col_count += 1
@@ -259,7 +251,7 @@ class World():
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+            #pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 
 # create enemy
@@ -291,6 +283,7 @@ class Coin(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.coinSound = pygame.mixer.Sound("coinSound.mp3")
 
 
 # select positions for world
@@ -317,7 +310,7 @@ world_data = [
     [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1],
 ]
 
-player = Player(100, screen_height - 130)
+player = Player(70, screen_height - 120)
 
 enemy_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
@@ -325,10 +318,9 @@ coin_group = pygame.sprite.Group()
 
 world = World(world_data)
 
-reset_button = Button(screen_width // 2 - 75, screen_height // 2, reset)
+gameover_button = Button(screen_width // 2 - 75, screen_height // 2, gameover_img)
 start_button = Button(screen_width // 2 - 150, screen_height // 2 - 40, start)
 quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit_img)
-restart_button = Button(screen_width // 2 - 75, screen_height // 2 + 100, restart_img)
 
 coins_collected = 0
 coins_font = pygame.font.Font(None, 36)
@@ -354,16 +346,17 @@ while run:
             if player.rect.colliderect(coin.rect):
                 coin_group.remove(coin)
                 coins_collected += 1
+                coinSound.play()
 
         coins_text = coins_font.render("Coins: " + str(coins_collected), True, (255, 255, 255))
         screen.blit(coins_text, (30, 30))
 
     if game_over == 2:
-        screen.blit(reset, (screen_width // 2 - 150, screen_height // 2 - 75))
-        if reset_button.draw():
+        if gameover_button.draw():
             game_over = 0
             coins_collected = 0
             player.lives = 3
+            gameoverSound.play()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
