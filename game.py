@@ -166,19 +166,20 @@ class Player():
                         self.initial_time = pygame.time.get_ticks()  # Reset the timer
 
                     # Timer update
-                    current_time = pygame.time.get_ticks()  # Current time in milliseconds
-                    elapsed_seconds = (current_time - self.initial_time) // 1000  # Elapsed time in seconds
-                    self.timer = max(0, 30 - elapsed_seconds)  # Calculate remaining time
+                    if self.started_moving:
+                        current_time = pygame.time.get_ticks()  # Current time in milliseconds
+                        elapsed_seconds = (current_time - self.initial_time) // 1000  # Elapsed time in seconds
+                        self.timer = max(0, 30 - elapsed_seconds)  # Calculate remaining time
 
-                    if self.timer == 0:  # Timer has run out
-                        total_lives -= 1  # Decrease lives by 1
-                        self.initial_time = pygame.time.get_ticks()  # Reset initial time
-                        self.rect.x = 100  # Reset player's position
-                        self.rect.y = screen_height - 130
-                        if total_lives == 0:  # No more lives left
-                            status1 = -1  # Set status1 to indicate game over
+                        if self.timer == 0:  # Timer has run out
+                            total_lives -= 1  # Decrease lives by 1
+                            self.initial_time = pygame.time.get_ticks()  # Reset initial time
                             self.rect.x = 100  # Reset player's position
                             self.rect.y = screen_height - 130
+                            if total_lives == 0:  # No more lives left
+                                status1 = -1  # Set status1 to indicate game over
+                                self.rect.x = 100  # Reset player's position
+                                self.rect.y = screen_height - 130
 
                     # update player coordinates
                     self.rect.x += dx
@@ -541,7 +542,7 @@ while run:
         screen.blit(lives_text, (530, 38))
 
         if status1 == 2 and status2 == 2:
-            if finalLevel: # both reaches door
+            if finalLevel:  # both reaches door
                 gameover_button.draw()
             else:
                 status1 = 0
@@ -552,7 +553,6 @@ while run:
                 player2.reset_timer()
                 world = World(level2_world)
                 finalLevel = True
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
