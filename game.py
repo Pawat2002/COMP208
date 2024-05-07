@@ -42,6 +42,11 @@ quit_img = pygame.image.load("quit.png")
 win_img = pygame.image.load("win.webp")
 lose_img = pygame.image.load("lose.png")
 
+# sound effects
+jumpSound = pygame.mixer.Sound("jump.wav")
+coinSound = pygame.mixer.Sound("coinSound.mp3")
+gameoverSound = pygame.mixer.Sound("gameoverSound.mp3")
+
 
 class Button():
     def __init__(self, x, y, image):
@@ -78,27 +83,9 @@ class Button():
         return action
 
 
-# sound effects
-jumpSound = pygame.mixer.Sound("jump.wav")
-coinSound = pygame.mixer.Sound("coinSound.mp3")
-gameoverSound = pygame.mixer.Sound("gameoverSound.mp3")
-
-
-def bg_music():
-    """
-    play background music
-    """
-    if not pygame.mixer.music.get_busy():
-        # Load audio file
-        pygame.mixer.music.load("arcade_music.mp3")
-        # play the music
-        pygame.mixer.music.play(-1)
-        # set bg_music volume
-        pygame.mixer.music.set_volume(0.2)
-
 
 # create player
-class Player():
+class Player1():
     def __init__(self, x, y):
         """
         initialise settings for player
@@ -554,7 +541,7 @@ level2_world = [
 ]
 
 # create players and set their position
-player = Player(70, screen_height - 120)
+player = Player1(70, screen_height - 120)
 player2 = Player2(40, screen_height - 120)
 
 # create enemy/door/coin
@@ -603,7 +590,6 @@ while run:
                 coinSound.play()
 
         # show text for coins/timer/lives
-
         # coins
         coins_text = coins_font.render("Coins: " + str(coins_collected), True, (255, 255, 255))
         screen.blit(coins_text, (30, 30))
