@@ -83,7 +83,6 @@ class Button():
         return action
 
 
-
 # create player
 class Player1():
     def __init__(self, x, y):
@@ -215,13 +214,13 @@ class Player1():
 
                 # Draw player onto screen
                 screen.blit(self.image, self.rect)
-                #pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+                # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
             elif status1 == -1:
-                self.rect.x = 70  #reposition player
+                self.rect.x = 70  # reposition player
                 self.rect.y = screen_height - 130
                 status1 = 0  # reset game with player died
-                player.reset_timer()  #reset timer
+                player.reset_timer()  # reset timer
                 player2.reset_timer()
 
 
@@ -232,7 +231,7 @@ class Player1():
                 player.reset_timer()
 
         if total_lives == 0:  # cant reset game if player have no lives left
-            status1 = -1  #dead
+            status1 = -1  # dead
             gameover_button.draw()
             lose_button.draw()
             self.gameoverSound.play()
@@ -367,7 +366,7 @@ class Player2():
 
                 # Draw player onto screen
                 screen.blit(self.image, self.rect)
-                #pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+                # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
 
             elif status2 == -1:
@@ -443,7 +442,7 @@ class World():
         """
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            #pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+            # pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 
 # create enemy
@@ -456,7 +455,7 @@ class Enemy(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("enemy.png")
-        self.image = pygame.transform.scale(self.image, (40, 40)) #rescale image
+        self.image = pygame.transform.scale(self.image, (40, 40))  # rescale image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -471,7 +470,7 @@ class Door(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("door.png")
-        self.image = pygame.transform.scale(self.image, (40, 40)) # rescale image
+        self.image = pygame.transform.scale(self.image, (40, 40))  # rescale image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -486,11 +485,11 @@ class Coin(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("coin.png")
-        self.image = pygame.transform.scale(self.image, (30, 30)) # rescale coins
+        self.image = pygame.transform.scale(self.image, (30, 30))  # rescale coins
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.coinSound = pygame.mixer.Sound("coinSound.mp3") # initialse sound for getting coin
+        self.coinSound = pygame.mixer.Sound("coinSound.mp3")  # initialse sound for getting coin
 
 
 # map world for each level
@@ -551,7 +550,7 @@ coin_group = pygame.sprite.Group()
 
 # initialise world
 world = World(level1_world)
-finalLevel = False # check if it is the final level
+finalLevel = False  # check if it is the final level
 
 # load images and set position
 gameover_button = Button(screen_width // 2 - 75, screen_height // 2, gameover_img)
@@ -560,7 +559,7 @@ quit_button = Button(screen_width // 2 + 75, screen_height // 2 - 40, quit_img)
 win_button = Button(screen_width // 2 - 175, screen_height // 2 - 40, win_img)
 lose_button = Button(screen_width // 2 - 175, screen_height // 2 - 40, lose_img)
 
-#settings for collecting coins
+# settings for collecting coins
 coins_collected = 0
 coins_font = pygame.font.Font(None, 36)
 
@@ -569,12 +568,12 @@ while run:
     clock.tick(fps)
     screen.blit(bg, (0, 0))
     if main_menu == True:
-        if start_button.draw(): # after pressing start button
+        if start_button.draw():  # after pressing start button
             main_menu = False
-        if quit_button.draw(): # dont run after pressing quit button
+        if quit_button.draw():  # dont run after pressing quit button
             run = False
     else:
-        #draw everything on screen
+        # draw everything on screen
         world.draw()
         enemy_group.draw(screen)
         door_group.draw(screen)
@@ -605,26 +604,26 @@ while run:
 
         # both players reach the door
         if status1 == 2 and status2 == 2:
-            if coins_collected == 4: # check if players collected all coins
+            if coins_collected == 4:  # check if players collected all coins
                 if finalLevel:  # is final level
                     # players won
                     gameover_button.draw()
                     win_button.draw()
-                else: # not final level
+                else:  # not final level
                     # reset variables
                     status1 = 0
                     status2 = 0
                     coins_collected = 0
                     total_lives = 3
                     player.reset_timer()  # reset timer for player 1
-                    player2.reset_timer() # reset timer for player 2
-                    world = World(level2_world) # load level2 world
+                    player2.reset_timer()  # reset timer for player 2
+                    world = World(level2_world)  # load level2 world
                     finalLevel = True
-            else: # didnt collect all coins
+            else:  # didnt collect all coins
                 # played lost
                 gameover_button.draw()
                 lose_button.draw()
-    
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
